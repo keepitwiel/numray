@@ -22,17 +22,17 @@ def propagate(x0, dx0, intensity0, environment, mirror=True):
     # take modulo to get relative position
     x = x0 % 1
 
-    foolog('    concatinate...')
+    #foolog('    concatinate...')
     xx = np.concatenate([-1 - x, 0 - x, 1 - x], axis=0)
     dxx = np.concatenate([dx0, dx0, dx0], axis=0)
 
     # calculate "rate" needed to get to edges of cube for each axis
-    foolog('    division...')
+    #foolog('    division...')
     l = xx / dxx
 
     # remove nans/infs
     # remove 0 or negative numbers
-    foolog('    stuff...')
+    #foolog('    stuff...')
     l[(~np.isfinite(l)) | (l <= 0)] = HUGE_NUMBER
 
     # smallest rate of change gets chosen
@@ -42,7 +42,7 @@ def propagate(x0, dx0, intensity0, environment, mirror=True):
     l_min[l_min == HUGE_NUMBER] = 1
 
     # new position
-    foolog('    new position...')
+    #foolog('    new position...')
     x1 = x0 + l_min * dx0
 
     # given new position and old direction of a ray, we can determine the volume bordering the current one.
@@ -51,18 +51,18 @@ def propagate(x0, dx0, intensity0, environment, mirror=True):
     # if not, the ray direction should remain the same
 
     # bordering volume
-    foolog('    volume diff...')
+    #foolog('    volume diff...')
     current_volume = volume(x0, dx0)
     bordering_volume = volume(x1, dx0)
     position_diff = bordering_volume - current_volume
 
-    foolog('    calculate remaining intensity...')
+    #foolog('    calculate remaining intensity...')
     solid = environment.get_solid(bordering_volume.astype(int)) # is bordering volume solid?
     albedo = environment.get_albedo(bordering_volume.astype(int)) # what is the bordering volume's albedo?
     absorption = (1 - albedo) * solid
     intensity1 = intensity0 * (1 - absorption)
 
-    foolog('    change direction...')
+    #foolog('    change direction...')
     # only need to change direction if the change in position coincides with a solid bordering volume
     change_direction = position_diff * solid
     change_direction_index = np.sum(np.abs(change_direction), axis=0)
@@ -72,6 +72,8 @@ def propagate(x0, dx0, intensity0, environment, mirror=True):
         dx1 = (1 - 2 * np.abs(change_direction)) * dx0
     else:
         dx1 = random_direction_change(dx0, change_direction_index.astype(bool), -change_direction)
+
+    #rasterize(x1, dx1, intensity1)
 
     #sign_ok = np.sign(dx_mirror) * np.sign(dx1)
     return x1, dx1, intensity1

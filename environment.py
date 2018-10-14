@@ -7,7 +7,7 @@ class Environment(object):
         self._solid[1:9, 7:9, 6] = 1 # a ridge protruding from wall opposite the camera
         self._default_solid = 0
 
-        self._albedo = 1.0 * np.ones((10, 10, 10), dtype=np.float32)
+        self._albedo = 0.8 * np.ones((10, 10, 10), dtype=np.float32)
         # self._albedo[0:9, 0:9, 9] = 0 # light source has 0 albedo
         # self._albedo[0:9, 0:9, 0] = 1.0 # floor has very high albedo
         self._default_albedo = 0.5
