@@ -27,12 +27,12 @@ def random_unit_vector(n):
     return result
 
 
-def generate_light_source_grid(x0, y0, x1, y1, z, rays_per_side):
+def generate_light_source_grid(x0, x1, y0, y1, z0, rays_per_side):
     x = np.array([n for _ in np.linspace(x0, x1, rays_per_side) for n in np.linspace(x0, x1, rays_per_side)],
                  dtype=np.float32)
     y = np.array([n for n in np.linspace(y0, y1, rays_per_side) for _ in np.linspace(y0, y1, rays_per_side)],
                  dtype=np.float32)
-    z = 9 * np.ones(rays_per_side ** 2, dtype=np.float32)
+    z = z0 * np.ones(rays_per_side ** 2, dtype=np.float32)
 
     return np.concatenate([[x], [y], [z]], axis=0)
 

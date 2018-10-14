@@ -11,7 +11,7 @@ def volume(x, dx):
     diff = (x_int == x) * np.minimum(0, np.sign(dx))
     return x_int + diff
 
-def propagate(x0, dx0, intensity0, environment, mirror=True):
+def propagate(x0, dx0, intensity0, environment, camera, mirror=True):
     """propagates set of N rays with position x0 and direction dx0 to x1, dx1.
     * x0: 3xN matrix
     * dx0: 3xN matrix
@@ -21,6 +21,10 @@ def propagate(x0, dx0, intensity0, environment, mirror=True):
 
     # take modulo to get relative position
     x = x0 % 1
+    current_volume = volume(x0, dx0)
+
+    # first, we can rasterize using above information: location (current_volume), relative position (x) and direction (dx0)
+    camera.rasterize(x, current_volume, dx0, intensity0)
 
     #foolog('    concatinate...')
     xx = np.concatenate([-1 - x, 0 - x, 1 - x], axis=0)
@@ -52,7 +56,6 @@ def propagate(x0, dx0, intensity0, environment, mirror=True):
 
     # bordering volume
     #foolog('    volume diff...')
-    current_volume = volume(x0, dx0)
     bordering_volume = volume(x1, dx0)
     position_diff = bordering_volume - current_volume
 

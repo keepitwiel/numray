@@ -8,9 +8,10 @@ from environment import Environment
 from utils import generate_rays_from_light_source, get_raster_focal_directions, foolog
 from propagate import propagate
 from rasterize import rasterize3
+from camera import Camera
 
 RAYS_PER_SIDE = 500
-NR_OF_PROPAGATIONS_PER_EPOCH = 25
+NR_OF_PROPAGATIONS_PER_EPOCH = 50
 NR_OF_EPOCHS = 1000
 RASTER_DIMENSION = 40
 
@@ -26,47 +27,50 @@ def main(rays_per_side, nr_of_propagations, raster_dimension, mirror, normalize_
 
     raster = None
 
+    dx_source = np.array([[0], [0], [-1]])
+
+    environment = Environment()
+    x_camera = np.array([[3], [1], [3]])
+    dx_camera = np.array([[0], [-1], [0]])
+    focal_directions = get_raster_focal_directions(raster_dimension, dx_camera)
+
+    camera = Camera(x_camera, dx_camera, raster_dimension)
+
     for epoch in range(NR_OF_EPOCHS):
         foolog('starting epoch {0} of {1}...'.format(epoch+1, NR_OF_EPOCHS))
 
-        foolog('generating rays...')
+        #foolog('generating rays...')
         #x, dx, intensity = generate_rays(rays_per_side)
-        dx_source = np.array([[0], [0], [-1]])
 
         x, dx, intensity = generate_rays_from_light_source(2, 8, 2, 8, 9, dx_source, True, rays_per_side)
 
-        environment = Environment()
-        x_camera = np.array([[3], [1], [3]])
-        dx_camera = np.array([[0], [-1], [0]])
-        focal_directions = get_raster_focal_directions(raster_dimension, dx_camera)
-
-        foolog('starting ray propagation...')
+        #foolog('starting ray propagation...')
         for r in range(nr_of_propagations+1):
-            foolog('Step {0}. Remaining average intensity: {1:2.3f}'.format(r, np.average(intensity)))
-            foolog('Average position: {0}'.format(np.average(x, axis=1)))
+            #foolog('Step {0}. Remaining average intensity: {1:2.3f}'.format(r, np.average(intensity)))
+            #foolog('Average position: {0}'.format(np.average(x, axis=1)))
 
-            foolog('rasterize...')
-            result = rasterize3(x, dx, intensity, x_camera, dx_camera, RASTER_DIMENSION, focal_directions)
-            if raster is None:
-                raster = result
-            else:
-                raster += result
+            # foolog('rasterize...')
+            # result = rasterize3(x, dx, intensity, x_camera, dx_camera, RASTER_DIMENSION, focal_directions)
+            # if raster is None:
+            #     raster = result
+            # else:
+            #     raster += result
 
             if r < nr_of_propagations:
-                foolog('propagate...')
-                x, dx, intensity = propagate(x, dx, intensity, environment, mirror=mirror)
+            #    foolog('propagate...')
+                x, dx, intensity = propagate(x, dx, intensity, environment, camera, mirror=mirror)
 
         if to_png:
-            foolog('    output to png...')
-
-            brightness_factor = 1
-            if normalize_brightness:
-                m = np.max(raster)
-                if m > 0:
-                    brightness_factor = 255.0 / m
-
-            output_raster = (brightness_factor * raster).astype(np.uint8)
-            png.from_array(output_raster, 'L').save('output/output_epoch={0}.png'.format(epoch))
+        #    foolog('output to png...')
+            camera.to_png(epoch, normalize_brightness)
+            # brightness_factor = 1
+            # if normalize_brightness:
+            #     m = np.max(raster)
+            #     if m > 0:
+            #         brightness_factor = 255.0 / m
+            #
+            # output_raster = (brightness_factor * raster).astype(np.uint8)
+            # png.from_array(output_raster, 'L').save('output/output_epoch={0}.png'.format(epoch))
 
 
     t1 = time.time()
